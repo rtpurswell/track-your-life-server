@@ -19,18 +19,19 @@ router.post("/", async (req, res) => {
     name: req.body.name,
     email: req.body.email,
     password: password,
+    verified: true
   });
 
-  if (config.util.getEnv("NODE_ENV") === "development" || config.util.getEnv("NODE_ENV") === "test") {
-    user.set({ verified: false });
-  } else {
-    const emailResult = await emailer.sendVerificationEmail(user);
-    if (emailResult.errno)
-      return res
-        .status(500)
-        .send("Unable to send verification email. Please try again later.");
-    console.log(emailResult);
-  }
+  // if (config.util.getEnv("NODE_ENV") === "development" || config.util.getEnv("NODE_ENV") === "test") {
+  //   user.set({ verified: true });
+  // } else {
+  //   const emailResult = await emailer.sendVerificationEmail(user);
+  //   if (emailResult.errno)
+  //     return res
+  //       .status(500)
+  //       .send("Unable to send verification email. Please try again later.");
+  //   console.log(emailResult);
+  // }
 
   await user.save();
   res
