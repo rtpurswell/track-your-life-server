@@ -1,0 +1,9 @@
+{
+    "jwtPrivateKey": "asdfasdfwefwe",
+    "brand": "Organizer",
+    "authTokenName": "x-rpurswell-token",
+    "appColors": ["red","blue"],
+    "db" : {
+        "host" : "mongodb://localhost/OrganizerTests"
+      }
+  }

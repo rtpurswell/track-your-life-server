@@ -1,0 +1,15 @@
+{
+  "domain": "localhost:3000",
+  "protocol": "http",
+  "mail": {
+    "host": "smtp.office365.com",
+    "username": "taylor@tpurswell.com",
+    "password": "",
+    "port": "587",
+    "fromName": "Taylor Purswell",
+    "fromAddress": "taylor@tpurswell.com"
+  },
+  "db" : {
+    "host" : "mongodb://localhost/Organizer"
+  }
+}
