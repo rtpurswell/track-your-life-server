@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
     name: req.body.name,
     email: req.body.email,
     password: password,
-    verified: true
+    verified: true,
   });
 
   // if (config.util.getEnv("NODE_ENV") === "development" || config.util.getEnv("NODE_ENV") === "test") {
@@ -45,7 +45,7 @@ router.get("/validate", async (req, res) => {
   const user = await User.findOne({ email: email, verified: false });
 
   if (!user) return res.status(404).send("Email verification falied.");
-  
+
   const validCode = await bcrypt.compare(user._id.toString(), code);
 
   if (!validCode) return res.status(400).send("Email verification failed");

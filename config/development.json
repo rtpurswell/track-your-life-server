@@ -9,7 +9,7 @@
     "fromName": "Taylor Purswell",
     "fromAddress": "taylor@tpurswell.com"
   },
-  "db" : {
-    "host" : "mongodb://localhost/Organizer"
+  "db": {
+    "host": "mongodb://localhost/Organizer"
   }
 }

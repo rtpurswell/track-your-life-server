@@ -1,4 +1,4 @@
-//Initilize all routes in the application 
+//Initilize all routes in the application
 
 const users = require("../routes/users");
 const auth = require("../routes/auth");
@@ -12,7 +12,7 @@ const habbitNotes = require("../routes/habbitNote");
 const error = require("../middleware/error");
 module.exports = (app) => {
   app.use("/api/users", users);
-  app.use("/api/auth",auth);
+  app.use("/api/auth", auth);
   app.use("/api/ideas", ideas);
   app.use("/api/todos", todos);
   app.use("/api/habbits/categories", habbitCategories);

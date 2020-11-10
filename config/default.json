@@ -2,14 +2,13 @@
   "jwtPrivateKey": "",
   "brand": "Organizer",
   "authTokenName": "x-rpurswell-token",
-  "appColors": ["red","blue"],
-  "db" : {
-    "host" : ""
+  "appColors": ["red", "blue"],
+  "db": {
+    "host": ""
   },
-  "debug" : {
+  "debug": {
     "mongoose": false,
-    "httpLog" : true,
+    "httpLog": true,
     "httpLogLevel": "tiny"
   }
-  
 }

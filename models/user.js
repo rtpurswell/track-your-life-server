@@ -28,10 +28,13 @@ userSchema.methods.generateAuthToken = function () {
   );
 };
 userSchema.statics.hashPassword = async function (password) {
-return await bcrypt.hash(password, 10);
+  return await bcrypt.hash(password, 10);
 };
-userSchema.statics.validatePassword = async function (passwordAttempt,password) {
- return await bcrypt.compare(passwordAttempt, password);
+userSchema.statics.validatePassword = async function (
+  passwordAttempt,
+  password
+) {
+  return await bcrypt.compare(passwordAttempt, password);
 };
 const User = mongoose.model("User", userSchema);
 function validateUser(user) {

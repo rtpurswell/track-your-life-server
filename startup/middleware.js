@@ -11,7 +11,7 @@ module.exports = (app) => {
   app.use(helmet());
   app.use(express.json());
   app.use(compression());
-  if(config.get("debug.httpLog")){
+  if (config.get("debug.httpLog")) {
     app.use(morgan("tiny"));
     debug("Morgan enabled...");
   }
