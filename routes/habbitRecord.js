@@ -44,6 +44,19 @@ router.put(
     res.send(habbitRecord);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, true)],
+  async (req, res) => {
+    const { user } = req;
+
+    const habbitRecord = await HabbitRecord.lookup(user, req.params.id);
+    if (!habbitRecord) return res.status(404).send("Record Not Found");
+    habbitRecord.set(req.body);
+    await habbitRecord.save();
+    res.send(habbitRecord);
+  }
+);
 router.delete("/:id", [validateObjectId, auth], async (req, res) => {
   const { user } = req;
 

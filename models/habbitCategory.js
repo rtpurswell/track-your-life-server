@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 const config = require("config");
+const _ = require("lodash");
 
 const habbitCategorySchema = mongoose.Schema({
   name: { type: String, required: true, min: 2, max: 60 },
@@ -14,14 +15,16 @@ const habbitCategorySchema = mongoose.Schema({
 habbitCategorySchema.statics.lookup = async function (user, _id) {
   return await this.findOne({ userId: user._id, _id: _id });
 };
-const validate = (habbitCategory) => {
-  const schema = Joi.object({
+const validate = (habbitCategory, partial = false) => {
+  const schema = {
     name: Joi.string().required().min(2).max(60),
     color: Joi.string()
       .required()
       .valid(...config.get("appColors")),
-  });
-  return schema.validate(habbitCategory);
+  };
+
+  if (!partial) return Joi.object(schema).validate(habbitCategory);
+  return Joi.validatePartial(schema, habbitCategory);
 };
 exports.HabbitCategory = new mongoose.model(
   "HabbitCategories",

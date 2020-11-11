@@ -81,6 +81,7 @@ describe("/api/todos", () => {
       expect(res.body.length).toBe(2);
     });
   });
+
   describe("GET /:id ", () => {
     it("Should return 401 if the user does not provide a valid token", async () => {
       const res = await request(server)
@@ -206,6 +207,7 @@ describe("/api/todos", () => {
       expect(todoBoard.todos[0].description).toBe("My First Todo");
     });
   });
+
   describe("PUT /:id ", () => {
     let todoBoard;
     let sampleTodoBoard;
@@ -279,6 +281,84 @@ describe("/api/todos", () => {
       expect(todoBoardSearch).not.toBeNull();
     });
   });
+
+  describe("PATCH /:id ", () => {
+    let todoBoard;
+    let sampleTodoBoard;
+    beforeEach(async () => {
+      todoBoard = {
+        name: "Todo Board1",
+        description: "My first Board",
+        color: config.get("appColors")[0],
+        todos: [
+          {
+            name: "Todo 1",
+            description: "My First Todo",
+            color: config.get("appColors")[0],
+            completed: false,
+          },
+        ],
+      };
+      sampleTodoBoard = new TodoBoard(todoBoard);
+      sampleTodoBoard.set({ userId: user._id });
+      await sampleTodoBoard.save();
+      delete todoBoard.todos;
+      delete todoBoard.color;
+    });
+
+    const exec = async () => {
+      return await request(server)
+        .patch(`/api/todos/${sampleTodoBoard._id}`)
+        .set(config.get("authTokenName"), token)
+        .send(todoBoard);
+    };
+
+    it("Should return 401 if the user does not provide a valid token", async () => {
+      token = "";
+      const res = await exec();
+      expect(res.status).toBe(401);
+    });
+    it("Should return 400 if Object ID is invalid", async () => {
+      const res = await request(server)
+        .patch(`/api/todos/1245`)
+        .set(config.get("authTokenName"), token)
+        .send(todoBoard);
+      expect(res.status).toBe(400);
+    });
+    it("Should return 404 if Object Id is not found", async () => {
+      const res = await request(server)
+        .patch(`/api/todos/${mongoose.Types.ObjectId()}`)
+        .set(config.get("authTokenName"), token)
+        .send(todoBoard);
+      expect(res.status).toBe(404);
+    });
+    it("Should return 404 if the user does not own the TodoBoard", async () => {
+      token = new User({
+        name: "Test Name",
+        email: "test@test.com",
+      }).generateAuthToken();
+      const res = await exec();
+      expect(res.status).toBe(404);
+    });
+    it("Should return 400 if the validation fails", async () => {
+      todoBoard.name = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should update the existing TodoBoard if input is valid and user owns it", async () => {
+      todoBoard.name = "Changed Name";
+      const res = await exec();
+
+      const todoBoardSearch = await TodoBoard.findOne({
+        userId: user._id,
+        _id: sampleTodoBoard._id,
+        name: "Changed Name",
+      });
+      expect(todoBoardSearch).not.toBeNull();
+      expect(todoBoardSearch.todos[0].name).toBe("Todo 1");
+    });
+  });
+
   describe("DELETE /:id ", () => {
     let todoBoard;
     let sampleTodoBoard;

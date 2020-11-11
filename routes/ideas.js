@@ -39,6 +39,19 @@ router.put(
     res.send(ideaBoard);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, true)],
+  async (req, res) => {
+    const { user } = req;
+
+    const ideaBoard = await IdeaBoard.lookup(user, req.params.id);
+    if (!ideaBoard) return res.status(404).send("Not Found");
+    ideaBoard.set(req.body);
+    await ideaBoard.save();
+    res.send(ideaBoard);
+  }
+);
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const { user } = req;
 

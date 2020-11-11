@@ -30,8 +30,8 @@ const habbitSchema = mongoose.Schema({
 habbitSchema.statics.lookup = async function (user, _id) {
   return await this.findOne({ userId: user._id, _id: _id });
 };
-const validate = (habbit) => {
-  const schema = Joi.object({
+const validate = (habbit, partial = false) => {
+  const schema = {
     name: Joi.string().required().min(2).max(60),
     description: Joi.string().min(2).max(256),
     color: Joi.string()
@@ -44,8 +44,10 @@ const validate = (habbit) => {
       amount: Joi.number().required().min(1).max(100),
     }),
     categoryId: Joi.objectId().required(),
-  });
-  return schema.validate(habbit);
+  };
+
+  if (!partial) return Joi.object(schema).validate(habbit);
+  return Joi.validatePartial(schema, habbit);
 };
 exports.Habbit = new mongoose.model("Habbits", habbitSchema);
 exports.validate = validate;

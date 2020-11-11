@@ -40,6 +40,19 @@ router.put(
     res.send(habbit);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, true)],
+  async (req, res) => {
+    const { user } = req;
+
+    const habbit = await Habbit.lookup(user, req.params.id);
+    if (!habbit) return res.status(404).send("Habbit Not Found");
+    habbit.set(req.body);
+    await habbit.save();
+    res.send(habbit);
+  }
+);
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const { user } = req;
 

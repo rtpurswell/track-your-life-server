@@ -245,6 +245,75 @@ describe("/api/habbits/records", () => {
     });
   });
 
+  describe("PATCH /:id", () => {
+    let habbitRecord;
+    let sampleHabbitRecord;
+    beforeEach(async () => {
+      habbitRecord = {
+        date: "2021-01-01",
+        habbitId: "5fa74048d611ec711ecab478",
+      };
+      sampleHabbitRecord = new HabbitRecord(habbitRecord);
+      sampleHabbitRecord.set({ userId: user._id });
+      await sampleHabbitRecord.save();
+      delete habbitRecord.habbitId;
+    });
+
+    const exec = async () => {
+      return await request(server)
+        .patch(`/api/habbits/records/${sampleHabbitRecord._id}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitRecord);
+    };
+
+    it("Should return 401 if the user does not provide a valid token", async () => {
+      token = "";
+      const res = await exec();
+      expect(res.status).toBe(401);
+    });
+    it("Should return 400 if Object ID is invalid", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/records/1245`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitRecord);
+      expect(res.status).toBe(400);
+    });
+    it("Should return 404 if Object Id is not found", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/records/${mongoose.Types.ObjectId()}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitRecord);
+      expect(res.status).toBe(404);
+    });
+    it("Should return 404 if the user does not own the HabbitRecord", async () => {
+      token = new User({
+        name: "Test Name",
+        email: "test@test.com",
+      }).generateAuthToken();
+      const res = await exec();
+      expect(res.status).toBe(404);
+    });
+    it("Should return 400 if the validation fails", async () => {
+      habbitRecord.date = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should return 400 if any fields are added", async () => {
+      habbitRecord.extra = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should update the existing HabbitRecord if input is valid and user owns it", async () => {
+      const res = await exec();
+      const habbitRecordSearch = await HabbitRecord.findOne({
+        userId: user._id,
+        _id: sampleHabbitRecord._id,
+        date: "2021-01-01",
+      });
+      expect(habbitRecordSearch).not.toBeNull();
+    });
+  });
+
   describe("DELETE /:id", () => {
     let habbitRecord;
     let sampleHabbitRecord;

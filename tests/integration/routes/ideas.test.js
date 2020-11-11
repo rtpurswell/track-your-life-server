@@ -402,6 +402,98 @@ describe("/api/ideas", () => {
     });
   });
 
+  describe("PATCH /:id", () => {
+    let ideaBoard;
+    let sampleIdeaBoard;
+    beforeEach(async () => {
+      ideaBoard = {
+        name: "Idea Board 2",
+        description: "test 2",
+        color: config.get("appColors")[0],
+        ideas: [
+          {
+            name: "Idea1",
+            color: config.get("appColors")[0],
+            description: "Thi is it",
+            notes: [
+              {
+                color: config.get("appColors")[0],
+                description: "idea Note",
+              },
+            ],
+          },
+        ],
+        notes: [
+          {
+            color: config.get("appColors")[0],
+            description: "Note 1",
+          },
+          {
+            color: config.get("appColors")[0],
+            description: "Note 2",
+          },
+        ],
+      };
+      sampleIdeaBoard = new IdeaBoard(ideaBoard);
+      sampleIdeaBoard.set({ userId: user._id });
+      await sampleIdeaBoard.save();
+      delete ideaBoard.notes;
+      delete ideaBoard.color;
+    });
+
+    const exec = async () => {
+      return await request(server)
+        .patch(`/api/ideas/${sampleIdeaBoard._id}`)
+        .set(config.get("authTokenName"), token)
+        .send(ideaBoard);
+    };
+
+    it("Should return 401 if the user does not provide a valid token", async () => {
+      token = "";
+      const res = await exec();
+      expect(res.status).toBe(401);
+    });
+    it("Should return 400 if Object ID is invalid", async () => {
+      const res = await request(server)
+        .patch(`/api/ideas/1245`)
+        .set(config.get("authTokenName"), token)
+        .send(ideaBoard);
+      expect(res.status).toBe(400);
+    });
+    it("Should return 404 if Object Id is not found", async () => {
+      const res = await request(server)
+        .patch(`/api/ideas/${mongoose.Types.ObjectId()}`)
+        .set(config.get("authTokenName"), token)
+        .send(ideaBoard);
+      expect(res.status).toBe(404);
+    });
+    it("Should return 404 if the user does not own the IdeaBoard", async () => {
+      token = new User({
+        name: "Test Name",
+        email: "test@test.com",
+      }).generateAuthToken();
+      const res = await exec();
+      expect(res.status).toBe(404);
+    });
+    it("Should return 400 if the validation fails", async () => {
+      ideaBoard.name = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should update the existing IdeaBoard if input is valid and user owns it", async () => {
+      ideaBoard.name = "Changed Name";
+      const res = await exec();
+
+      const ideaBoardSearch = await IdeaBoard.findOne({
+        userId: user._id,
+        _id: sampleIdeaBoard._id,
+        name: "Changed Name",
+      });
+      expect(ideaBoardSearch).not.toBeNull();
+      expect(ideaBoardSearch.notes[0].description).toBe("Note 1");
+    });
+  });
+
   describe("DELETE /:id", () => {
     let ideaBoard;
     let sampleIdeaBoard;

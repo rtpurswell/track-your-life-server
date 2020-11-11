@@ -43,6 +43,19 @@ router.put(
     res.send(habbitCategory);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, (partial = true))],
+  async (req, res) => {
+    const { user } = req;
+
+    const habbitCategory = await HabbitCategory.lookup(user, req.params.id);
+    if (!habbitCategory) return res.status(404).send("Category Not Found");
+    habbitCategory.set(req.body);
+    await habbitCategory.save();
+    res.send(habbitCategory);
+  }
+);
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const { user } = req;
   if (!req.body.replacedBy)

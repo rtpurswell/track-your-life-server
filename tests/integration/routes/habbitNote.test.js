@@ -251,6 +251,76 @@ describe("/api/habbits/notes", () => {
     });
   });
 
+  describe("PATCH /:id", () => {
+    let habbitNote;
+    let sampleHabbitNote;
+    beforeEach(async () => {
+      habbitNote = {
+        description: "Test Note",
+        categoryId: "5fa74048d611ec711ecab478",
+      };
+      sampleHabbitNote = new HabbitNote(habbitNote);
+      sampleHabbitNote.set({ userId: user._id });
+      await sampleHabbitNote.save();
+      delete habbitNote.categoryId;
+    });
+
+    const exec = async () => {
+      return await request(server)
+        .patch(`/api/habbits/notes/${sampleHabbitNote._id}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitNote);
+    };
+
+    it("Should return 401 if the user does not provide a valid token", async () => {
+      token = "";
+      const res = await exec();
+      expect(res.status).toBe(401);
+    });
+    it("Should return 400 if Object ID is invalid", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/notes/1245`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitNote);
+      expect(res.status).toBe(400);
+    });
+    it("Should return 404 if Object Id is not found", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/notes/${mongoose.Types.ObjectId()}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitNote);
+      expect(res.status).toBe(404);
+    });
+    it("Should return 404 if the user does not own the HabbitNote", async () => {
+      token = new User({
+        name: "Test Name",
+        email: "test@test.com",
+      }).generateAuthToken();
+      const res = await exec();
+      expect(res.status).toBe(404);
+    });
+    it("Should return 400 if the validation fails", async () => {
+      habbitNote.description = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should return 400 if any extra fields are passed", async () => {
+      habbitNote.name = "John";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should update the existing HabbitNote if input is valid and user owns it", async () => {
+      habbitNote.description = "Changed Description";
+      const res = await exec();
+      const habbitNoteSearch = await HabbitNote.findOne({
+        userId: user._id,
+        _id: sampleHabbitNote._id,
+        description: "Changed Description",
+      });
+      expect(habbitNoteSearch).not.toBeNull();
+    });
+  });
+
   describe("DELETE /:id", () => {
     let habbitNote;
     let sampleHabbitNote;

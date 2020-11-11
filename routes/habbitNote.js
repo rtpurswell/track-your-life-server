@@ -47,6 +47,21 @@ router.put(
     res.send(habbitNote);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, true)],
+  async (req, res) => {
+    const { user } = req;
+
+    const habbitNote = await HabbitNote.lookup(user, req.params.id);
+    if (!habbitNote) return res.status(404).send("Note Not Found");
+
+    habbitNote.set(req.body);
+    await habbitNote.save();
+
+    res.send(habbitNote);
+  }
+);
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const { user } = req;
 

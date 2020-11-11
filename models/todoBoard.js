@@ -23,7 +23,7 @@ const todoBoardSchema = mongoose.Schema({
 todoBoardSchema.statics.lookup = async function (user, _id) {
   return await this.findOne({ userId: user._id, _id });
 };
-const validate = (todoBoard) => {
+const validate = (todoBoard, partial = false) => {
   const todoSchema = Joi.object({
     name: Joi.string().required().min(2).max(60),
     description: Joi.string().min(2).max(256),
@@ -33,16 +33,17 @@ const validate = (todoBoard) => {
     dueDate: Joi.date(),
     completed: Joi.bool().required(),
   });
-  const schema = Joi.object({
+  const schema = {
     name: Joi.string().required().min(2).max(60),
     description: Joi.string().min(2).max(256),
     color: Joi.string()
       .required()
       .valid(...config.get("appColors")),
     todos: Joi.array().items(todoSchema),
-  });
+  };
 
-  return schema.validate(todoBoard);
+  if (!partial) return Joi.object(schema).validate(todoBoard);
+  return Joi.validatePartial(schema, todoBoard);
 };
 
 exports.validate = validate;

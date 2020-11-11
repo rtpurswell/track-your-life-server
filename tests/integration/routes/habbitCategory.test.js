@@ -210,6 +210,78 @@ describe("/api/habbits/categories", () => {
     });
   });
 
+  describe("PATCH /:id", () => {
+    let habbitCategory;
+    let sampleHabbitCategory;
+    beforeEach(async () => {
+      habbitCategory = {
+        name: "Category 1",
+        color: config.get("appColors")[0],
+      };
+      sampleHabbitCategory = new HabbitCategory(habbitCategory);
+      sampleHabbitCategory.set({ userId: user._id });
+      await sampleHabbitCategory.save();
+      delete habbitCategory.color;
+    });
+
+    const exec = async () => {
+      return await request(server)
+        .patch(`/api/habbits/categories/${sampleHabbitCategory._id}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitCategory);
+    };
+
+    it("Should return 401 if the user does not provide a valid token", async () => {
+      token = "";
+      const res = await exec();
+      expect(res.status).toBe(401);
+    });
+    it("Should return 400 if Object ID is invalid", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/categories/1245`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitCategory);
+      expect(res.status).toBe(400);
+    });
+    it("Should return 404 if Object Id is not found", async () => {
+      const res = await request(server)
+        .patch(`/api/habbits/categories/${mongoose.Types.ObjectId()}`)
+        .set(config.get("authTokenName"), token)
+        .send(habbitCategory);
+
+      expect(res.status).toBe(404);
+    });
+    it("Should return 404 if the user does not own the HabbitCategory", async () => {
+      token = new User({
+        name: "Test Name",
+        email: "test@test.com",
+      }).generateAuthToken();
+      const res = await exec();
+      expect(res.status).toBe(404);
+    });
+    it("Should return 400 if the validation fails", async () => {
+      habbitCategory.name = "a";
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should return 400 if any extra fields are added", async () => {
+      habbitCategory.userId = user._id;
+      const res = await exec();
+      expect(res.status).toBe(400);
+    });
+    it("Should update the existing HabbitCategory if input is valid and user owns it", async () => {
+      habbitCategory.name = "Changed Name";
+      const res = await exec();
+
+      const habbitCategorySearch = await HabbitCategory.findOne({
+        userId: user._id,
+        _id: sampleHabbitCategory._id,
+        name: "Changed Name",
+      });
+      expect(habbitCategorySearch).not.toBeNull();
+    });
+  });
+
   describe("DELETE /:id", () => {
     let habbitCategory;
     let sampleHabbitCategory;

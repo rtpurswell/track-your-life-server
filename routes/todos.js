@@ -41,6 +41,20 @@ router.put(
     res.send(todoBoard);
   }
 );
+router.patch(
+  "/:id",
+  [auth, validateObjectId, validator(validate, true)],
+  async (req, res) => {
+    const { user } = req;
+
+    const todoBoard = await TodoBoard.lookup(user, req.params.id);
+    if (!todoBoard) return res.status(404).send("Not Found");
+
+    todoBoard.set(req.body);
+    await todoBoard.save();
+    res.send(todoBoard);
+  }
+);
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const { user } = req;
 

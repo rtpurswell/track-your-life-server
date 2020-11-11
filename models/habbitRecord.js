@@ -17,12 +17,13 @@ const habbitRecordSchema = mongoose.Schema({
 habbitRecordSchema.statics.lookup = async function (user, _id) {
   return await this.findOne({ userId: user._id, _id: _id });
 };
-const validate = (habbitRecord) => {
-  const schema = Joi.object({
+const validate = (habbitRecord, partial = false) => {
+  const schema = {
     habbitId: Joi.objectId().required(),
     date: Joi.date(),
-  });
-  return schema.validate(habbitRecord);
+  };
+  if (!partial) return Joi.object(schema).validate(habbitRecord);
+  return Joi.validatePartial(schema, habbitRecord);
 };
 exports.HabbitRecord = new mongoose.model("HabbitRecords", habbitRecordSchema);
 exports.validate = validate;
