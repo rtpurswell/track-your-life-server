@@ -59,6 +59,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
     _id: req.params.id,
     userId: user._id,
   });
+  ideaBoard._id = req.params.id;
   res.send(ideaBoard);
 });
 module.exports = router;

@@ -64,6 +64,7 @@ router.delete("/:id", [validateObjectId, auth], async (req, res) => {
     userId: user._id,
     _id: req.params.id,
   });
+  habbitRecord._id = req.params.id;
   res.send(habbitRecord);
 });
 

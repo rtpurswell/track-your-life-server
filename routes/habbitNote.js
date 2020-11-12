@@ -69,6 +69,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
     userId: user._id,
     _id: req.params.id,
   });
+  habbitNote._id = req.params.id;
   res.send(habbitNote);
 });
 

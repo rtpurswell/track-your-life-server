@@ -62,6 +62,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
     userId: user._id,
     _id: req.params.id,
   });
+  todoBoard._id = req.params.id;
   res.send(todoBoard);
 });
 module.exports = router;
